@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <title>{%block title%}Titulek{%endblock%}</title>
     
-    <!--link rel="stylesheet" 
-          href="{{ url_for('static', filename='styles.css')}}" -->
+    <link rel="stylesheet" 
+          href="{{ url_for('static', filename='styles.css')}}">
 
 </head>
 
 <body>
- <h1>Ahoj</h1>
+
+<h1>Ahoj</h1>
 
 <ul>
     <li><a href="{{ url_for('index') }}">HOme</a></li>
@@ -20,6 +21,9 @@
     <li><a href="/banany/ahoj">Banány</a></li>
 </ul>
 
+{% for category, message in get_flashed_messages(with_categories=true) %}
+    <p class="message {{ category }}">{{ message }}</p>
+{% endfor %}
 
 
 {% block obsah %}

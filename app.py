@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session,flash
 
 app = Flask(__name__)
 """
@@ -59,14 +59,22 @@ def kvetak():
 
 @app.route("/login/", methods=["GET"])
 def login():
+    if request.method == 'GET':  # nemá funkčí význam -- jen ukázka
+        login = request.args.get('login')
+        passwd = request.args.get('passwd')
+        print(login, passwd)
     return render_template("login.html.j2")
 
 
 @app.route("/login/", methods=["POST"])
 def login_post():
-    pass
-    pass
-    pass
-    pass
-    pass
+    login = request.form.get('login')
+    passwd = request.form.get('passwd')
+    if login == 'marek' and passwd == 'lokomotiva':
+        session['user'] = login
+        flash("Hurá", 'pass')
+    else:
+        flash("Neeeeeeee", 'err')
+    
+
     return redirect(url_for('login'))

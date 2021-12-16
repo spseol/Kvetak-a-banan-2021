@@ -1,4 +1,6 @@
-from flask import Flask, render_template, request, redirect, url_for, session,flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash
+
+# from werkzeug import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 """
@@ -20,7 +22,6 @@ def index():
 
 @app.route("/abc/", methods=["GET"])
 def abc():
-    session["user"] = "karel"
     try:
         x = request.args.get("x")
         y = request.args.get("y")
@@ -54,27 +55,42 @@ def banany(parametr):
 
 @app.route("/kvetak/")
 def kvetak():
-    return render_template("kvetak.html.j2")
+    if 'user' in session:
+        return render_template("kvetak.html.j2")
+    else: 
+        flash(f'Pro zobrazení této stránky ({request.path}) je nutné se přihlásit!', 'err')
+        return redirect(url_for('login', next=request.path))
 
 
 @app.route("/login/", methods=["GET"])
 def login():
-    if request.method == 'GET':  # nemá funkčí význam -- jen ukázka
-        login = request.args.get('login')
-        passwd = request.args.get('passwd')
+    if request.method == "GET":  # nemá funkčí význam -- jen ukázka
+        login = request.args.get("login")
+        passwd = request.args.get("passwd")
         print(login, passwd)
     return render_template("login.html.j2")
 
 
 @app.route("/login/", methods=["POST"])
 def login_post():
-    login = request.form.get('login')
-    passwd = request.form.get('passwd')
-    if login == 'marek' and passwd == 'lokomotiva':
-        session['user'] = login
-        flash("Hurá", 'pass')
+    login = request.form.get("login")
+    passwd = request.form.get("passwd")
+    next = request.args.get('next')
+    if passwd == "lokomotiva":
+        session["user"] = login
+        flash("Hurá", "pass")
+        if next:
+            return redirect(next)
     else:
-        flash("Neeeeeeee", 'err')
-    
+        flash("Neeeeeeee", "err")
+    if next: 
+        return redirect(url_for("login", next=next))
+    else:
+        return redirect(url_for("login"))
 
-    return redirect(url_for('login'))
+
+@app.route("/logout/")
+def logout():
+    session.pop("user", None)
+    flash("Právě jsi se odhlásil", "pass")
+    return redirect(url_for("index"))

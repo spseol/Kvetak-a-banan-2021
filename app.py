@@ -15,12 +15,28 @@ app.secret_key = (
 # app.secret_key = os.urandom()
 
 
+def login_required(f):
+    def wrapper(*args, **kwargs):
+        if "user" in session:
+            return f(*args, **kwargs)
+        else:
+            flash(
+                f"Pro zobrazení této stránky ({request.path}) je nutné se přihlásit!",
+                "err",
+            )
+            return redirect(url_for("login", next=request.path))
+    wrapper.__name__ = f.__name__
+    wrapper.__doc__ = f.__doc__
+    return wrapper
+
+
 @app.route("/")
 def index():
     return render_template("base.html.j2", a=12, b=3.14)
 
 
 @app.route("/abc/", methods=["GET"])
+@login_required
 def abc():
     try:
         x = request.args.get("x")
@@ -55,11 +71,13 @@ def banany(parametr):
 
 @app.route("/kvetak/")
 def kvetak():
-    if 'user' in session:
+    if "user" in session:
         return render_template("kvetak.html.j2")
-    else: 
-        flash(f'Pro zobrazení této stránky ({request.path}) je nutné se přihlásit!', 'err')
-        return redirect(url_for('login', next=request.path))
+    else:
+        flash(
+            f"Pro zobrazení této stránky ({request.path}) je nutné se přihlásit!", "err"
+        )
+        return redirect(url_for("login", next=request.path))
 
 
 @app.route("/login/", methods=["GET"])
@@ -75,7 +93,7 @@ def login():
 def login_post():
     login = request.form.get("login")
     passwd = request.form.get("passwd")
-    next = request.args.get('next')
+    next = request.args.get("next")
     if passwd == "lokomotiva":
         session["user"] = login
         flash("Hurá", "pass")
@@ -83,7 +101,7 @@ def login_post():
             return redirect(next)
     else:
         flash("Neeeeeeee", "err")
-    if next: 
+    if next:
         return redirect(url_for("login", next=next))
     else:
         return redirect(url_for("login"))
